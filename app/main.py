@@ -1,14 +1,14 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import Session
-from app.database import init_db, get_db
+from app.database import init_db
 from app.routes import orders, products  # API routes
-from app.models import Product
 
 app = FastAPI(title="Bethel Wellness API")
 
+# -----------------------------
 # Enable CORS
+# -----------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,24 +17,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API routers
+# -----------------------------
+# Include API routers under /api
+# -----------------------------
 app.include_router(orders.router, prefix="/api")
-app.include_router(products.router, prefix="/api")  # Keep API routes under /api
+app.include_router(products.router, prefix="/api")
 
-# Serve frontend at /app (so it won't override API routes)
-app.mount("/app", StaticFiles(directory="app/frontend_dist", html=True), name="frontend")
+# -----------------------------
+# Serve frontend at root /
+# -----------------------------
+app.mount("/", StaticFiles(directory="app/frontend_dist", html=True), name="frontend")
 
+# -----------------------------
+# Startup event: initialize DB
+# -----------------------------
 @app.on_event("startup")
 def on_startup():
     init_db()
 
-# Root route: return all products as JSON
-@app.get("/")
-def read_products(db: Session = Depends(get_db)):
-    products_list = db.query(Product).all()
-    return products_list
-
+# -----------------------------
 # Optional: API health check
+# -----------------------------
 @app.get("/api/health")
 def health_check():
     return {"status": "ok"}
