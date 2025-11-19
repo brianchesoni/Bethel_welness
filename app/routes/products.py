@@ -3,12 +3,10 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Product
 
-router = APIRouter(prefix="/products", tags=["Products"])
+router = APIRouter(tags=["Products"])
 
-@router.get("/", tags=["Products"])
+# GET /api/products
+@router.get("/products", tags=["Products"])
 def get_products(db: Session = Depends(get_db)):
-    """
-    Get all products
-    """
-    products = db.query(Product).all()
-    return products
+    """Fetch all products"""
+    return db.query(Product).all()
