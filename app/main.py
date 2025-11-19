@@ -1,8 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.database import init_db
-from app.routes import orders, products  # <- include products
+from sqlalchemy.orm import Session
+from app.database import init_db, get_db
+from app.routes import orders, products  # API routes
+from app.models import Product
 
 app = FastAPI(title="Bethel Wellness API")
 
@@ -15,20 +17,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(orders.router)
-app.include_router(products.router)  # <- keep API routes
+# Include API routers
+app.include_router(orders.router, prefix="/api")
+app.include_router(products.router, prefix="/api")  # Keep API routes under /api
 
-# Serve frontend
-# Make sure you have copied your Vite 'dist' folder here:
-# backend/app/frontend_dist
-app.mount("/", StaticFiles(directory="app/frontend_dist", html=True), name="frontend")
+# Serve frontend at /app (so it won't override API routes)
+app.mount("/app", StaticFiles(directory="app/frontend_dist", html=True), name="frontend")
 
 @app.on_event("startup")
 def on_startup():
     init_db()
 
-# Optional: API health check (this will be at /api or any other path you want)
+# Root route: return all products as JSON
+@app.get("/")
+def read_products(db: Session = Depends(get_db)):
+    products_list = db.query(Product).all()
+    return products_list
+
+# Optional: API health check
 @app.get("/api/health")
 def health_check():
     return {"status": "ok"}
