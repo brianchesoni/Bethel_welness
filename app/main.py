@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.database import init_db
-from app.routes import orders, products  # API routes
+from app.routes import preorders, products  # <-- use preorders.py instead of orders.py
 
 app = FastAPI(title="Bethel Wellness API")
 
@@ -20,8 +20,8 @@ app.add_middleware(
 # -----------------------------
 # Include API routers under /api
 # -----------------------------
-app.include_router(orders.router, prefix="/api")
-app.include_router(products.router, prefix="/api")
+app.include_router(preorders.router, prefix="/api")  # POST /api/preorders
+app.include_router(products.router, prefix="/api")   # GET /api/products
 
 # -----------------------------
 # Serve frontend at root /

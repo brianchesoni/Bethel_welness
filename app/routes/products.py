@@ -1,33 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app import models, schemas
 from app.database import get_db
+from app.models import Product
 
-router = APIRouter(
-    prefix="/products",
-    tags=["Products"]
-)
+router = APIRouter(prefix="/products", tags=["Products"])
 
-# -----------------------------
-# Get all products
-# -----------------------------
-@router.get("/", response_model=list[schemas.ProductResponse])
+@router.get("/", tags=["Products"])
 def get_products(db: Session = Depends(get_db)):
-    products = db.query(models.Product).all()
+    """
+    Get all products
+    """
+    products = db.query(Product).all()
     return products
-
-# -----------------------------
-# Create a new product
-# -----------------------------
-@router.post("/", response_model=schemas.ProductResponse)
-def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)):
-    new_product = models.Product(
-        name=product.name,
-        description=product.description,
-        price=product.price,
-        image_url=product.image_url
-    )
-    db.add(new_product)
-    db.commit()
-    db.refresh(new_product)
-    return new_product
