@@ -3,15 +3,19 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# Get the database URL directly from Render environment variables
+# Get the database URL from Render environment variables
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Engine and session
+# Create the SQLAlchemy engine
 engine = create_engine(DATABASE_URL, echo=True)  # echo=True for debug logs
+
+# Create a configured "Session" class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Base class for models
 Base = declarative_base()
 
-# Dependency for routes
+# Dependency to get a DB session
 def get_db():
     db = SessionLocal()
     try:
@@ -19,7 +23,9 @@ def get_db():
     finally:
         db.close()
 
-# Optional: safe table creation
+# Explicitly import all models
+from app.models import Product, Order, Preorder
+
+# Initialize the database tables
 def init_db():
-    from app.models import *  # import all models
     Base.metadata.create_all(bind=engine)
