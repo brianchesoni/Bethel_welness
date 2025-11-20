@@ -1,42 +1,28 @@
-# backend/app/routes/orders.py
-
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import Preorder, Product
+from app.models import Preorder
 
-router = APIRouter(prefix="/orders", tags=["Orders"])
+router = APIRouter(prefix="/preorders", tags=["Preorders"])
 
-# -----------------------------
-# Request Body Schema
-# -----------------------------
+# Request body for creating a preorder
 class PreorderRequest(BaseModel):
     customer_name: str
     customer_phone: str
     product_id: int
 
-# -----------------------------
-# Create a Preorder
-# POST /api/orders
-# -----------------------------
-@router.post("/")
+@router.post("/", tags=["Preorders"])
 def create_preorder(order: PreorderRequest, db: Session = Depends(get_db)):
-
-    # Check product exists
-    product = db.query(Product).filter(Product.id == order.product_id).first()
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
-
-    # Create preorder
+    """
+    Create a new preorder
+    """
     preorder = Preorder(
         customer_name=order.customer_name,
         customer_phone=order.customer_phone,
         product_id=order.product_id
     )
-
     db.add(preorder)
     db.commit()
     db.refresh(preorder)
-
     return {"message": "Preorder saved!", "order_id": preorder.id}

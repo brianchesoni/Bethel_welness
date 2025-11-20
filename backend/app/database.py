@@ -6,16 +6,16 @@ import os
 # Get the database URL from Render environment variables
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Create the SQLAlchemy engine
-engine = create_engine(DATABASE_URL, echo=True)  # echo=True for debug logs
+# SQLAlchemy engine
+engine = create_engine(DATABASE_URL, echo=True)
 
-# Create a configured "Session" class
+# Session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Base class for models
 Base = declarative_base()
 
-# Dependency to get a DB session
+# Dependency to get DB session
 def get_db():
     db = SessionLocal()
     try:
@@ -23,9 +23,9 @@ def get_db():
     finally:
         db.close()
 
-# Explicitly import all models
-from app.models import Product, Order, Preorder
+# Import models
+from app.models import Product, Preorder, Order
 
-# Initialize the database tables
+# Initialize tables
 def init_db():
     Base.metadata.create_all(bind=engine)
