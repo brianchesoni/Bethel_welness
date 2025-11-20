@@ -4,13 +4,13 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from app.database import init_db, SessionLocal
-from app.routes import preorders, products  # <- updated import
+from app.routes import orders, products
 from app.models import Product
 
 app = FastAPI(title="Bethel Wellness API")
 
 # -----------------------------
-# CORS
+# Enable CORS
 # -----------------------------
 app.add_middleware(
     CORSMiddleware,
@@ -21,13 +21,13 @@ app.add_middleware(
 )
 
 # -----------------------------
-# API Routers
+# Include API routers
 # -----------------------------
-app.include_router(preorders.router, prefix="/api")   # POST /api/preorders
-app.include_router(products.router, prefix="/api")    # GET /api/products
+app.include_router(orders.router, prefix="/api")    # /api/preorders
+app.include_router(products.router, prefix="/api")  # /api/products
 
 # -----------------------------
-# Serve frontend
+# Serve frontend build
 # -----------------------------
 app.mount("/", StaticFiles(directory="app/frontend_dist", html=True), name="frontend")
 
@@ -37,7 +37,8 @@ app.mount("/", StaticFiles(directory="app/frontend_dist", html=True), name="fron
 def populate_products():
     db: Session = SessionLocal()
     try:
-        if db.query(Product).count() == 0:
+        existing = db.query(Product).count()
+        if existing == 0:
             default_products = [
                 {"name": "Super Collagen Plus", "description": "Supports skin, hair, nails & joints", "price": 2500},
                 {"name": "Vitamin C Complex", "description": "Boosts immunity and energy", "price": 1500},
@@ -47,11 +48,13 @@ def populate_products():
                 db.add(Product(**p))
             db.commit()
             print("Default products populated!")
+    except Exception as e:
+        print("❌ Error populating products:", e)
     finally:
         db.close()
 
 # -----------------------------
-# Startup
+# Startup event
 # -----------------------------
 @app.on_event("startup")
 def on_startup():
@@ -61,7 +64,7 @@ def on_startup():
     print("Startup complete.")
 
 # -----------------------------
-# Health Check
+# Health check
 # -----------------------------
 @app.get("/api/health")
 def health_check():
