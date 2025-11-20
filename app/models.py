@@ -1,10 +1,12 @@
+# backend/app/models.py
+
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
 from sqlalchemy.sql import func
-from .database import Base
+from app.database import Base
 
-# ---------------------------------
-# Product Model
-# ---------------------------------
+# -----------------------------
+# Product Table
+# -----------------------------
 class Product(Base):
     __tablename__ = "products"
 
@@ -16,25 +18,9 @@ class Product(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
-# ---------------------------------
-# Order Model
-# ---------------------------------
-class Order(Base):
-    __tablename__ = "orders"
-
-    id = Column(Integer, primary_key=True, index=True)
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
-    name = Column(String, nullable=False)
-    phone = Column(String, nullable=False)
-    qty = Column(Integer, nullable=False)
-    payment_status = Column(String, default="pending")   # pending / paid / delivered
-    payment_date = Column(DateTime(timezone=True), nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-
-# ---------------------------------
-# Preorder Model (NEW)
-# ---------------------------------
+# -----------------------------
+# Preorder Table
+# -----------------------------
 class Preorder(Base):
     __tablename__ = "preorders"
 
@@ -42,4 +28,20 @@ class Preorder(Base):
     customer_name = Column(String, nullable=False)
     customer_phone = Column(String, nullable=False)
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+# -----------------------------
+# Orders Table (optional, not yet used)
+# -----------------------------
+class Order(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    name = Column(String, nullable=False)
+    phone = Column(String, nullable=False)
+    qty = Column(Integer, default=1)
+    payment_status = Column(String, default="pending")
+    payment_date = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
