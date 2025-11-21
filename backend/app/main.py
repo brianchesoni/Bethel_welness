@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import init_db, SessionLocal
 from app.routes import orders, products
-from app.models import Product
+from app.models import Products
 
 app = FastAPI(title="Bethel Wellness API")
 
