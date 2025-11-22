@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 import os
 
@@ -19,7 +19,7 @@ app = FastAPI(title="Bethel Wellness API")
 # -----------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change to your frontend URL in production
+    allow_origins=["*"],  # Replace "*" with your frontend URL in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,13 +42,24 @@ app.mount("/assets", StaticFiles(directory="app/frontend_dist/assets"), name="as
 def read_index():
     return FileResponse("app/frontend_dist/index.html")
 
-# Catch-all route for SPA client-side routing
+# Catch-all route for SPA client-side routing (GET)
 @app.get("/{full_path:path}")
 def catch_all(full_path: str, request: Request):
     file_path = f"app/frontend_dist/{full_path}"
     if os.path.isfile(file_path):
         return FileResponse(file_path)
     return FileResponse("app/frontend_dist/index.html")
+
+# -----------------------------
+# HEAD and OPTIONS support (fix 405/preorder issues)
+# -----------------------------
+@app.head("/{full_path:path}")
+def head_full(full_path: str):
+    return Response(status_code=200)
+
+@app.options("/{full_path:path}")
+def options_full(full_path: str):
+    return Response(status_code=200)
 
 # -----------------------------
 # Populate default products
