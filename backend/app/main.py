@@ -19,25 +19,25 @@ app = FastAPI(title="Bethel Wellness API")
 # -----------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change to your frontend domain in production
+    allow_origins=["*"],  # Change to your frontend URL in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # -----------------------------
-# Include API routers
+# API routers
 # -----------------------------
 app.include_router(orders.router, prefix="/api")    # /api/preorders
 app.include_router(products.router, prefix="/api")  # /api/products
 
 # -----------------------------
-# Serve frontend build (Vite)
+# Serve frontend build
 # -----------------------------
-# Serve the frontend_dist folder (JS/CSS/images are directly in it)
-app.mount("/frontend_dist", StaticFiles(directory="app/frontend_dist"), name="frontend_dist")
+# Serve the /assets folder for JS/CSS/images
+app.mount("/assets", StaticFiles(directory="app/frontend_dist/assets"), name="assets")
 
-# Root route
+# Serve index.html at root
 @app.get("/")
 def read_index():
     return FileResponse("app/frontend_dist/index.html")
